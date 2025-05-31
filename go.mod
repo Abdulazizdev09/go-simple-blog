@@ -1,4 +1,4 @@
-module github.com/Anwarjondev/go-simple-blog
+module github.com/Abdulazizdev09/go_project
 
 go 1.22.2
 

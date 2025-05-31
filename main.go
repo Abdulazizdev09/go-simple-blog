@@ -15,7 +15,7 @@ var templates = template.Must(template.ParseGlob("views/**/*"))
 
 func DBConnection() (*sql.DB, error) {
 	User := "postgres"
-	Password := "1234"
+	Password := "09092005"
 	Host := "localhost"
 	Port := "5432"
 	Database := "go-simple-blog"
