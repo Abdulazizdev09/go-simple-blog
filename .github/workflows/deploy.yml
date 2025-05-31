@@ -43,6 +43,29 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
+            # Update package list
+            sudo apt-get update
+
+            # Install Docker if not installed
+            if ! command -v docker &> /dev/null; then
+              sudo apt-get install -y ca-certificates curl gnupg
+              sudo install -m 0755 -d /etc/apt/keyrings
+              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+              sudo chmod a+r /etc/apt/keyrings/docker.gpg
+              echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+              sudo apt-get update
+              sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+              sudo systemctl start docker
+              sudo systemctl enable docker
+              sudo usermod -aG docker $USER
+            fi
+
+            # Install Docker Compose v2 if not installed
+            if ! command -v docker-compose &> /dev/null; then
+              sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+            fi
+
             # Create directory if it doesn't exist
             mkdir -p /home/ubuntu/go-simple-blog
             
@@ -90,7 +113,18 @@ jobs:
             # Navigate to the application directory
             cd /home/ubuntu/go-simple-blog
             
-            # Pull the latest image and restart containers
-            docker-compose pull app
-            docker-compose down
-            docker-compose up -d 
+            # Make sure we have the latest images
+            sudo docker-compose pull
+            
+            # Stop and remove existing containers
+            sudo docker-compose down
+            
+            # Start the containers in detached mode
+            sudo docker-compose up -d
+            
+            # Wait for containers to be up
+            echo "Waiting for containers to start..."
+            sleep 10
+            
+            # Check container status
+            sudo docker-compose ps 
