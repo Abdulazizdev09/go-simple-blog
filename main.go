@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"text/template"
 	"time"
 
@@ -14,11 +15,26 @@ import (
 var templates = template.Must(template.ParseGlob("views/**/*"))
 
 func DBConnection() (*sql.DB, error) {
-	User := "postgres"
-	Password := "09092005"
-	Host := "localhost"
-	Port := "5432"
-	Database := "go-simple-blog"
+	User := os.Getenv("DB_USER")
+	if User == "" {
+		User = "postgres"
+	}
+	Password := os.Getenv("DB_PASS")
+	if Password == "" {
+		Password = "postgres"
+	}
+	Host := os.Getenv("DB_HOST")
+	if Host == "" {
+		Host = "localhost"
+	}
+	Port := os.Getenv("DB_PORT")
+	if Port == "" {
+		Port = "5432"
+	}
+	Database := os.Getenv("DB_NAME")
+	if Database == "" {
+		Database = "go_simple_blog"
+	}
 
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		Host, Port, User, Password, Database)
@@ -80,8 +96,13 @@ func main() {
 		Delete(w, r, db)
 	})
 
-	log.Println("Server starting on port 8000...")
-	if err := http.ListenAndServe(":8000", nil); err != nil {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	log.Printf("Server starting on port %s...", port)
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
 }
