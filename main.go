@@ -100,9 +100,9 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-
-	log.Printf("Server starting on port %s...", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
+	serverAddr := fmt.Sprintf("0.0.0.0:%s", port)
+	log.Printf("Server starting on %s...", serverAddr)
+	if err := http.ListenAndServe(serverAddr, nil); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
 }
